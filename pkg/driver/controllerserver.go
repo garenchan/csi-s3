@@ -53,6 +53,7 @@ func (cs *controllerServer) CreateVolume(ctx context.Context, req *csi.CreateVol
 	prefix := ""
 	usePrefix, usePrefixError := strconv.ParseBool(params[mounter.UsePrefix])
 	defaultFsPath := defaultFsPath
+	extraOptions := params[mounter.ExtraOptions]
 
 	// check if bucket name is overridden
 	if nameOverride, ok := params[mounter.BucketKey]; ok {
@@ -93,6 +94,7 @@ func (cs *controllerServer) CreateVolume(ctx context.Context, req *csi.CreateVol
 		Mounter:       mounterType,
 		CapacityBytes: capacityBytes,
 		FSPath:        defaultFsPath,
+		ExtraOptions:  extraOptions,
 	}
 
 	client, err := s3.NewClientFromSecret(req.GetSecrets())

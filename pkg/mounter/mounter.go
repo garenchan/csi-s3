@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -34,6 +35,10 @@ const (
 	BucketKey           = "bucket"
 	VolumePrefix        = "prefix"
 	UsePrefix           = "usePrefix"
+	ExtraOptions        = "extraOptions"
+
+	// Some mounters support cache, and this directory is used for cache
+	cacheDir = "/tmp"
 )
 
 // New returns a new mounter depending on the mounterType parameter
@@ -180,4 +185,9 @@ func createLoopDevice(device string) error {
 		return fmt.Errorf("Error configuring loop device: %s", out)
 	}
 	return nil
+}
+
+// getCacheDir get the cache directory path
+func getCacheDir(uniqueId string) string {
+	return filepath.Join(cacheDir, uniqueId)
 }

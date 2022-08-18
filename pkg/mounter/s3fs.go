@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
+	"github.com/golang/glog"
 	"k8s.io/utils/mount"
 
 	"github.com/ctrox/csi-s3/pkg/common"
@@ -36,6 +38,7 @@ func (s3fs *s3fsMounter) Stage(stageTarget string) error {
 	if err := writes3fsPass(s3fs.pwFileContent); err != nil {
 		return err
 	}
+
 	args := []string{
 		fmt.Sprintf("%s:/%s", s3fs.meta.BucketName, path.Join(s3fs.meta.Prefix, s3fs.meta.FSPath)),
 		stageTarget,
@@ -45,7 +48,31 @@ func (s3fs *s3fsMounter) Stage(stageTarget string) error {
 		"-o", "allow_other",
 		"-o", "mp_umask=000",
 	}
+
+	// parse and append extra options
+	extraOptions := s3fs.parseExtraOptions()
+	args = append(args, extraOptions...)
+
 	return fuseMount(stageTarget, s3fsCmd, args)
+}
+
+func (s3fs *s3fsMounter) parseExtraOptions() []string {
+	extraOptions := s3fs.meta.ExtraOptions
+
+	// We support the use of placeholders in options, such as ${cacheDir}
+	extraOptions = os.Expand(extraOptions, s3fs.extraOptionsMapping)
+
+	return strings.Fields(extraOptions)
+}
+
+func (s3fs *s3fsMounter) extraOptionsMapping(name string) string {
+	switch name {
+	case "cacheDir":
+		return getCacheDir(s3fs.meta.BucketName)
+	}
+
+	glog.Warningf("Unknown extra option placeholder %q of bucket %s", name, s3fs.meta.BucketName)
+	return name
 }
 
 func (s3fs *s3fsMounter) Unstage(stageTarget string) error {

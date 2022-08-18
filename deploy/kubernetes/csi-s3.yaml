@@ -105,6 +105,8 @@ spec:
               mountPropagation: "Bidirectional"
             - name: fuse-device
               mountPath: /dev/fuse
+            - name: cache-dir
+              mountPath: /tmp
       volumes:
         - name: plugins-dir
           hostPath:
@@ -125,3 +127,5 @@ spec:
         - name: fuse-device
           hostPath:
             path: /dev/fuse
+        - name: cache-dir
+          emptyDir: {}

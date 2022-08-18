@@ -39,6 +39,7 @@ type FSMeta struct {
 	Mounter       string `json:"Mounter"`
 	FSPath        string `json:"FSPath"`
 	CapacityBytes int64  `json:"CapacityBytes"`
+	ExtraOptions  string `json:"ExtraOptions"`
 }
 
 func NewClient(cfg *Config) (*s3Client, error) {
